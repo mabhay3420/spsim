@@ -1,0 +1,9 @@
+
+*.csv
+*.sqlite3
+*.sqlite
+
+**/*.egg-info/**
+
+.venv/
+__pycache__/
