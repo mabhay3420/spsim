@@ -1,44 +1,31 @@
-## Run and Test
-
-1. Install uv
+## Setup
 
 ```
-curl -LsSf https://astral.sh/uv/install.sh | sh
+./spsim_d -s
 ```
 
-2. Setup environment
+## Run
+
 ```
-uv sync --python-preference=only-managed 
-```
-3. Activate environment
-```
-source .venv/bin/activate
+./spsim_d -r
 ```
 
-4. Run End 2 End
-```
-uv run scripts/run.py
-``` 
+## Test
 
-Run end 2 end with fresh data
 ```
-uv run scripts/run.py --refresh
+./spsim_d -t
 ```
 
-5. Run tests
+## Format
 
-Install editable project
 ```
-uv pip install -e .
-```
-Run pytest
-```
-pytest -q
-
+./spsim_d -f
 ```
 
 ## Styling instructions
+
 1. To add new dependencies use:
+
 ```
 uv add <package>
 ```
@@ -50,6 +37,7 @@ uv add <package>
 4. Try to keep functions small and focused and avoid side effects.
 
 5. Format code with:
+
 ```
 ruff format
 ```

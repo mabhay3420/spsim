@@ -54,8 +54,12 @@ def test_run_pipeline_no_network(
             ),
         ]
 
-    monkeypatch.setattr(fetch,    "fetch_all_beta_globin_sequences", fake_fetch, raising=True)
-    monkeypatch.setattr(pipeline, "fetch_all_beta_globin_sequences", fake_fetch, raising=True)
+    monkeypatch.setattr(
+        fetch, "fetch_all_beta_globin_sequences", fake_fetch, raising=True
+    )
+    monkeypatch.setattr(
+        pipeline, "fetch_all_beta_globin_sequences", fake_fetch, raising=True
+    )
 
     # 2) stub image resolution
     monkeypatch.setattr(images, "image_url", lambda *_: None, raising=True)

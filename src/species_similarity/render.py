@@ -128,8 +128,8 @@ def _prepare_positions(df: pd.DataFrame, size: int, ring_spacing: int):
     # ------------------------------------------------------------------ #
     rings = (
         others_df.groupby("hamming_distance", sort=True)
-                .apply(lambda g: g.to_dict("records"), include_groups=False)
-                .to_dict()
+        .apply(lambda g: g.to_dict("records"), include_groups=False)
+        .to_dict()
     )
 
     centre = size / 2

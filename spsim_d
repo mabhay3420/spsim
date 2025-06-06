@@ -1,0 +1,47 @@
+#!/bin/bash
+# spsim_d.sh – helper driver for the species-similarity project
+
+# Default action is “run”
+arg="${1:--r}"
+
+help() {
+    cat <<'EOF'
+Usage: spsim_d.sh [OPTION]
+
+Wrapper for the species-similarity project.
+
+Options
+  -s   Set up the virtual environment and install dependencies
+  -r   Run the full analysis pipeline          (default)
+  -t   Execute the pytest test-suite
+  -f   Format the codebase with ruff and black
+  -h   Show this help message and exit
+EOF
+}
+
+case "$arg" in
+-s)
+    echo "Setting up the environment…"
+    ./setup.sh
+    ;;
+-r)
+    echo "Running the pipeline…"
+    ./run.sh
+    ;;
+-t)
+    echo "Running the tests…"
+    ./test.sh
+    ;;
+-f)
+    echo "Formatting the code…"
+    ./format.sh
+    ;;
+-h)
+    help
+    ;;
+*)
+    echo "Invalid option: $arg"
+    help
+    exit 1
+    ;;
+esac
