@@ -7,7 +7,7 @@ pip install --upgrade uv
 # cd species-similarity
 
 # Create an in-project virtual environment and install all dependencies
-uv sync
+uv sync --python-preference=only-managed 
 source .venv/bin/activate
 uv pip install -e .
 # Run the complete pipeline

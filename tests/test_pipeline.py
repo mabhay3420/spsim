@@ -54,9 +54,8 @@ def test_run_pipeline_no_network(
             ),
         ]
 
-    monkeypatch.setattr(
-        fetch, "fetch_all_beta_globin_sequences", fake_fetch, raising=True
-    )
+    monkeypatch.setattr(fetch,    "fetch_all_beta_globin_sequences", fake_fetch, raising=True)
+    monkeypatch.setattr(pipeline, "fetch_all_beta_globin_sequences", fake_fetch, raising=True)
 
     # 2) stub image resolution
     monkeypatch.setattr(images, "image_url", lambda *_: None, raising=True)
@@ -72,4 +71,5 @@ def test_run_pipeline_no_network(
 
     # spot-check CSV content
     df = pd.read_csv(isolated_data_dirs / "close.csv")
+    print(df.head())
     assert set(df["scientific_name"]) == {"Homo sapiens", "Mus musculus"}

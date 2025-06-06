@@ -8,7 +8,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 2. Setup environment
 ```
-uv sync
+uv sync --python-preference=only-managed 
 ```
 3. Activate environment
 ```
