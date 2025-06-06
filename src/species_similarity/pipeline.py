@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 
 from pathlib import Path
 from typing import Final, Iterable
@@ -23,6 +24,7 @@ CSV_ALL: Final[Path] = DATA_PROCESSED / "all_beta_globin_sequences.csv"
 CSV_CLOSE: Final[Path] = DATA_PROCESSED / "close_to_human.csv"
 HTML_OUT: Final[Path] = DATA_PROCESSED / "close_to_human.html"
 GRAPH_HTML: Final[Path] = DATA_PROCESSED / "edit_distance_graph.html"
+GRAPH_JSON: Final[Path] = DATA_PROCESSED / "force" / "force.json"
 
 # --------------------------------------------------------------------- #
 #  Helpers for (de)serialising SequenceRecord                           #
@@ -128,6 +130,8 @@ def run(force_refresh: bool = False) -> Path:
     # 3) Distance graph
     graph = build_distance_graph(distances)
     pos = nx.spring_layout(graph, pos={"Human": (0.0, 0.0)}, fixed=["Human"])
+    d = nx.json_graph.node_link_data(graph)
+    json.dump(d, open(GRAPH_JSON, "w"))
     nx_vis.render_html(graph, GRAPH_HTML, pos=pos)
 
     # 4) Render concentric-circle HTML
