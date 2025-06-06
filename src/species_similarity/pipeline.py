@@ -2,7 +2,7 @@ from __future__ import annotations
 import json
 
 from pathlib import Path
-from typing import Final, Iterable
+from typing import Final, Iterable, Optional
 import logging
 
 import networkx as nx
@@ -10,7 +10,7 @@ import networkx as nx
 import pandas as pd
 
 from .config import DATA_PROCESSED, SequenceRecord, Species
-from .fetch import fetch_all_beta_globin_sequences
+from .fetch import fetch_gene_sequences, DEFAULT_GENE
 from .similarity import compute_distances, difference_mask
 from .images import image_url
 from .render import render_concentric as render_html
@@ -31,7 +31,7 @@ GRAPH_JSON: Final[Path] = DATA_PROCESSED / "force" / "force.json"
 # --------------------------------------------------------------------- #
 
 
-def _save_records(recs: list[SequenceRecord]) -> None:
+def _save_records(recs: list[SequenceRecord], path: Path) -> None:
     """Write flat CSV so pandas does not stringify the dataclass."""
     logger = logging.getLogger(__name__)
     rows = [
@@ -43,16 +43,16 @@ def _save_records(recs: list[SequenceRecord]) -> None:
         }
         for r in recs
     ]
-    CSV_ALL.parent.mkdir(parents=True, exist_ok=True)
-    logger.info("Saving records to %s", CSV_ALL)
-    pd.DataFrame(rows).to_csv(CSV_ALL, index=False)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    logger.info("Saving records to %s", path)
+    pd.DataFrame(rows).to_csv(path, index=False)
 
 
-def _load_records() -> list[SequenceRecord]:
+def _load_records(path: Path) -> list[SequenceRecord]:
     """Recreate SequenceRecord objects from the flat CSV."""
     logger = logging.getLogger(__name__)
-    logger.info("Loading records from %s", CSV_ALL)
-    df = pd.read_csv(CSV_ALL)
+    logger.info("Loading records from %s", path)
+    df = pd.read_csv(path)
     return [
         SequenceRecord(
             Species(row.common_name, row.scientific_name, int(row.taxonomy_id)),
@@ -79,7 +79,13 @@ def build_distance_graph(distances: Iterable[tuple[SequenceRecord, int]]) -> nx.
 # --------------------------------------------------------------------- #
 
 
-def run(force_refresh: bool = False) -> Path:
+def run(
+    force_refresh: bool = False,
+    gene: str = DEFAULT_GENE,
+    csv_all: Optional[Path] = None,
+    csv_close: Optional[Path] = None,
+    html_out: Optional[Path] = None,
+) -> Path:
     """
     End-to-end pipeline.
 
@@ -95,13 +101,29 @@ def run(force_refresh: bool = False) -> Path:
     """
     logger = logging.getLogger(__name__)
     logger.info("Starting pipeline")
-    # 1) Fetch or use cached data
-    if force_refresh or not CSV_ALL.exists():
-        logger.info("Fetching sequences from UniProt")
-        records = fetch_all_beta_globin_sequences()
-        _save_records(records)
 
-    records = _load_records()
+    csv_all = csv_all or (
+        CSV_ALL
+        if gene == DEFAULT_GENE
+        else DATA_PROCESSED / f"{gene}_all_sequences.csv"
+    )
+    csv_close = csv_close or (
+        CSV_CLOSE
+        if gene == DEFAULT_GENE
+        else DATA_PROCESSED / f"{gene}_close_to_human.csv"
+    )
+    html_out = html_out or (
+        HTML_OUT
+        if gene == DEFAULT_GENE
+        else DATA_PROCESSED / f"{gene}_close_to_human.html"
+    )
+    # 1) Fetch or use cached data
+    if force_refresh or not csv_all.exists():
+        logger.info("Fetching sequences from UniProt")
+        records = fetch_gene_sequences(gene)
+        _save_records(records, csv_all)
+
+    records = _load_records(csv_all)
 
     # 2) Similarity scores
     logger.info("Computing similarity distances")
@@ -124,9 +146,8 @@ def run(force_refresh: bool = False) -> Path:
         for r, dist in distances
     )
 
-    logger.info("Writing close species CSV to %s", CSV_CLOSE)
-    df.to_csv(CSV_CLOSE, index=False)
-
+    logger.info("Writing close species CSV to %s", csv_close)
+    df.to_csv(csv_close, index=False)
     # 3) Distance graph
     graph = build_distance_graph(distances)
     pos = nx.spring_layout(graph, pos={"Human": (0.0, 0.0)}, fixed=["Human"])

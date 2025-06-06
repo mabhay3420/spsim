@@ -18,7 +18,7 @@ class _DummyResponse(SimpleNamespace):
         pass
 
 
-def test_fetch_all_beta_globin_sequences(monkeypatch, sample_uniprot_payload):
+def test_fetch_gene_sequences(monkeypatch, sample_uniprot_payload):
     """Ensure the fetch layer converts the UniProt payload into SequenceRecords."""
 
     # ――― 1) stub requests.get so **no real HTTP** occurs
@@ -36,7 +36,7 @@ def test_fetch_all_beta_globin_sequences(monkeypatch, sample_uniprot_payload):
     )
 
     # ――― 2) execute & assert
-    records = fetch.fetch_all_beta_globin_sequences()
+    records = fetch.fetch_gene_sequences("TEST")
     assert {r.species.common_name for r in records} == {"Human", "Mouse"}
     assert records[0].sequence == "ACGT"
     # caching layer shouldn’t interfere

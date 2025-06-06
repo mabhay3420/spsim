@@ -4,7 +4,7 @@ import webbrowser
 import argparse
 import logging
 
-from species_similarity.pipeline import run
+from species_similarity.pipeline import run, DEFAULT_GENE
 
 
 def main() -> None:
@@ -16,9 +16,14 @@ def main() -> None:
     parser.add_argument(
         "--refresh", action="store_true", help="Ignore on‑disk cache & re‑download"
     )
+    parser.add_argument(
+        "--gene",
+        default=DEFAULT_GENE,
+        help="Gene identifier to download (default: HBB)",
+    )
     args = parser.parse_args()
 
-    out: Path = run(force_refresh=args.refresh)
+    out: Path = run(force_refresh=args.refresh, gene=args.gene)
     print(f"\n✅  Report generated → {out}")
     webbrowser.open(out.as_uri())
 

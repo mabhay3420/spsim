@@ -12,7 +12,7 @@ from .config import SequenceRecord, Species, DATA_RAW
 # Cache UniProt responses ~1 day
 requests_cache.install_cache(str(DATA_RAW / "uniprot_cache"), expire_after=86400)
 
-GENE = "HBB"
+DEFAULT_GENE = "HBB"
 UNIPROT_URL = "https://rest.uniprot.org/uniprotkb/search"
 
 
@@ -44,10 +44,10 @@ def _uniprot_query(query: str, page_size: int = 500) -> List[dict]:
     return out
 
 
-def fetch_all_beta_globin_sequences() -> List[SequenceRecord]:
-    """Return every sequence where gene==HBB."""
+def fetch_gene_sequences(gene: str = DEFAULT_GENE) -> List[SequenceRecord]:
+    """Return every sequence where ``gene`` matches the UniProt ``gene`` field."""
     logger = logging.getLogger(__name__)
-    raw = _uniprot_query(f"gene:{GENE}")
+    raw = _uniprot_query(f"gene:{gene}")
     logger.info("Converting UniProt records → SequenceRecord")
     records: List[SequenceRecord] = []
     for row in raw:
@@ -61,3 +61,8 @@ def fetch_all_beta_globin_sequences() -> List[SequenceRecord]:
         logger.debug("Parsed %s", species.common_name)
         records.append(SequenceRecord(species, seq))
     return records
+
+
+def fetch_all_beta_globin_sequences() -> List[SequenceRecord]:
+    """Return every sequence where gene==HBB."""
+    return fetch_gene_sequences(DEFAULT_GENE)
