@@ -8,6 +8,7 @@ from pyinaturalist.rest_api import get_observations
 
 IMAGE_SIZE: Final[str] = "medium"
 
+
 @lru_cache(maxsize=None)
 def image_url(scientific_name: str) -> str | None:
     try:

@@ -20,6 +20,7 @@ class _DummyResponse(SimpleNamespace):
 
 def test_fetch_all_beta_globin_sequences(monkeypatch, sample_uniprot_payload):
     """Ensure the fetch layer converts the UniProt payload into SequenceRecords."""
+
     # ――― 1) stub requests.get so **no real HTTP** occurs
     def fake_get(url: str, timeout: int = 30):
         return _DummyResponse(
@@ -27,11 +28,15 @@ def test_fetch_all_beta_globin_sequences(monkeypatch, sample_uniprot_payload):
             headers={},  # no “next” link → single page
         )
 
-    monkeypatch.setattr(fetch, "requests")  # make sure module has attr
-    monkeypatch.setattr(fetch.requests, "get", fake_get)
+    monkeypatch.setattr(
+        fetch,
+        "requests",
+        SimpleNamespace(get=fake_get),  # attribute value
+        raising=False,  # do not fail if attr was missing
+    )
 
     # ――― 2) execute & assert
-    records = fetch.fetch_all_beta_globin()
+    records = fetch.fetch_all_beta_globin_sequences()
     assert {r.species.common_name for r in records} == {"Human", "Mouse"}
     assert records[0].sequence == "ACGT"
     # caching layer shouldn’t interfere

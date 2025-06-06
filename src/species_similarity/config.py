@@ -10,12 +10,14 @@ DATA_PROCESSED: Final[Path] = ROOT / "data" / "processed"
 DATA_RAW.mkdir(parents=True, exist_ok=True)
 DATA_PROCESSED.mkdir(parents=True, exist_ok=True)
 
+
 # --- Data classes ---------------------------------------------
 @dataclass
 class Species:
     common_name: str
     scientific_name: str
     taxonomy_id: int
+
 
 @dataclass
 class SequenceRecord:

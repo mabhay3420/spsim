@@ -13,6 +13,7 @@ requests_cache.install_cache(str(DATA_RAW / "uniprot_cache"), expire_after=86400
 GENE = "HBB"
 UNIPROT_URL = "https://rest.uniprot.org/uniprotkb/search"
 
+
 def _uniprot_query(query: str, page_size: int = 500) -> List[dict]:
     url = f"{UNIPROT_URL}?query={quote_plus(query)}&format=json&size={page_size}"
     out: List[dict] = []
@@ -22,10 +23,15 @@ def _uniprot_query(query: str, page_size: int = 500) -> List[dict]:
         payload = r.json()
         out.extend(payload["results"])
         url = next(
-            (link.split(";")[0].strip(" <>") for link in r.headers.get("Link", "").split(",") if "rel=\"next\"" in link),
+            (
+                link.split(";")[0].strip(" <>")
+                for link in r.headers.get("Link", "").split(",")
+                if 'rel="next"' in link
+            ),
             None,
         )
     return out
+
 
 def fetch_all_beta_globin_sequences() -> List[SequenceRecord]:
     """Return every sequence where gene==HBB."""

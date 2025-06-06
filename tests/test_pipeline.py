@@ -38,6 +38,7 @@ def test_run_pipeline_no_network(
     *   Image API stub returns `None`
     *   Pipeline produces CSV artefacts and an HTML report
     """
+
     # 1) stub fetch layer to use the sample payload
     def fake_fetch():
         from species_similarity.fetch import SequenceRecord, Species
@@ -53,7 +54,9 @@ def test_run_pipeline_no_network(
             ),
         ]
 
-    monkeypatch.setattr(fetch, "fetch_all_beta_globin", fake_fetch, raising=True)
+    monkeypatch.setattr(
+        fetch, "fetch_all_beta_globin_sequences", fake_fetch, raising=True
+    )
 
     # 2) stub image resolution
     monkeypatch.setattr(images, "image_url", lambda *_: None, raising=True)

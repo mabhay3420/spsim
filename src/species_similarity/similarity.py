@@ -33,8 +33,7 @@ def hamming(a: str, b: str) -> int:
 
 
 def edit_distance(a: str, b: str) -> int:
-    return Levenshtein.distance(a, b)   # substitutions + indels
-
+    return Levenshtein.distance(a, b)  # substitutions + indels
 
 
 def difference_mask(ref: str, other: str) -> str:
@@ -73,7 +72,6 @@ def difference_mask(ref: str, other: str) -> str:
         # "delete" touches only `ref`; nothing to mark in `other`
 
     return "".join(mask)
-
 
 
 def compute_distances(

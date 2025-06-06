@@ -7,9 +7,8 @@ pip install --upgrade uv
 # cd species-similarity
 
 # Create an in-project virtual environment and install all dependencies
-uv venv -p 3.9
+uv sync
 source .venv/bin/activate
 uv pip install -e .
-
 # Run the complete pipeline
 python scripts/run.py            # uses cache if present
