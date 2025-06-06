@@ -57,11 +57,15 @@ def _scale_positions(
 
 
 def render_html(
-    graph: nx.Graph, out_path: Path, size: tuple[int, int] = (600, 400)
+    graph: nx.Graph,
+    out_path: Path,
+    size: tuple[int, int] = (600, 400),
+    pos: dict[str, tuple[float, float]] | None = None,
 ) -> Path:
     """Render *graph* to an HTML file with an inline SVG."""
     width, height = size
-    pos = nx.spring_layout(graph)
+    if pos is None:
+        pos = nx.spring_layout(graph)
     scaled = _scale_positions(
         {str(n): (p[0], p[1]) for n, p in pos.items()}, width, height
     )

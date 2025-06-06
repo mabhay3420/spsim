@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Final
+from typing import Final, Iterable
 import logging
+
+import networkx as nx
 
 import pandas as pd
 
@@ -11,6 +13,7 @@ from .fetch import fetch_all_beta_globin_sequences
 from .similarity import compute_distances, difference_mask
 from .images import image_url
 from .render import render_concentric as render_html
+from . import nx_vis
 
 # --------------------------------------------------------------------- #
 #  Paths                                                                #
@@ -19,6 +22,7 @@ from .render import render_concentric as render_html
 CSV_ALL: Final[Path] = DATA_PROCESSED / "all_beta_globin_sequences.csv"
 CSV_CLOSE: Final[Path] = DATA_PROCESSED / "close_to_human.csv"
 HTML_OUT: Final[Path] = DATA_PROCESSED / "close_to_human.html"
+GRAPH_HTML: Final[Path] = DATA_PROCESSED / "edit_distance_graph.html"
 
 # --------------------------------------------------------------------- #
 #  Helpers for (de)serialising SequenceRecord                           #
@@ -54,6 +58,18 @@ def _load_records() -> list[SequenceRecord]:
         )
         for row in df.itertuples(index=False)
     ]
+
+
+def build_distance_graph(distances: Iterable[tuple[SequenceRecord, int]]) -> nx.Graph:
+    """Return a graph with edges weighted by edit distance to Human."""
+    g = nx.Graph()
+    g.add_node("Human")
+    for rec, dist in distances:
+        name = rec.species.common_name
+        g.add_node(name)
+        if name.lower() != "human":
+            g.add_edge("Human", name, weight=dist)
+    return g
 
 
 # --------------------------------------------------------------------- #
@@ -109,6 +125,11 @@ def run(force_refresh: bool = False) -> Path:
     logger.info("Writing close species CSV to %s", CSV_CLOSE)
     df.to_csv(CSV_CLOSE, index=False)
 
-    # 3) Render concentric-circle HTML
+    # 3) Distance graph
+    graph = build_distance_graph(distances)
+    pos = nx.spring_layout(graph, pos={"Human": (0.0, 0.0)}, fixed=["Human"])
+    nx_vis.render_html(graph, GRAPH_HTML, pos=pos)
+
+    # 4) Render concentric-circle HTML
     logger.info("Rendering HTML report to %s", HTML_OUT)
     return render_html(df.sort_values("hamming_distance"), HTML_OUT)
