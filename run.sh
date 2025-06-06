@@ -1,4 +1,5 @@
 #!/bin/bash
+
 source .venv/bin/activate
-# Run the complete pipeline
-python scripts/run.py            # uses cache if present
+# Run the complete pipeline (uses cache if present)
+python scripts/run.py

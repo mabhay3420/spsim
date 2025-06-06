@@ -7,6 +7,8 @@ from rapidfuzz.distance import Levenshtein
 
 
 from typing import Iterable
+import logging
+from tqdm.auto import tqdm
 
 from .config import SequenceRecord
 
@@ -82,12 +84,21 @@ def compute_distances(
     Human (common_name == 'Human'), return a list of pairs
     *(record, hamming_distance_to_human)*.
     """
+    logger = logging.getLogger(__name__)
+
     recs = list(records)
     try:
         human_seq = next(
             r.sequence for r in recs if r.species.common_name.lower() == "human"
         )
     except StopIteration as exc:  # pragma: no cover
+        logger.error("Human sequence not present in record set")
         raise ValueError("Human sequence not present in record set") from exc
 
-    return [(rec, edit_distance(rec.sequence, human_seq)) for rec in recs]
+    distances: list[tuple[SequenceRecord, int]] = []
+    for rec in tqdm(recs, desc="Computing distances", unit="seq", leave=False):
+        dist = edit_distance(rec.sequence, human_seq)
+        logger.debug("Distance to human for %s: %d", rec.species.common_name, dist)
+        distances.append((rec, dist))
+
+    return distances
