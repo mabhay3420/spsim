@@ -2,11 +2,16 @@
 from pathlib import Path
 import webbrowser
 import argparse
+import logging
 
 from species_similarity.pipeline import run
 
 
 def main() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
     parser = argparse.ArgumentParser("species-similarity – end‑to‑end driver")
     parser.add_argument(
         "--refresh", action="store_true", help="Ignore on‑disk cache & re‑download"

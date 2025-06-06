@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Final
+import logging
 
 import pandas as pd
 
@@ -26,6 +27,7 @@ HTML_OUT: Final[Path] = DATA_PROCESSED / "close_to_human.html"
 
 def _save_records(recs: list[SequenceRecord]) -> None:
     """Write flat CSV so pandas does not stringify the dataclass."""
+    logger = logging.getLogger(__name__)
     rows = [
         {
             "common_name": r.species.common_name,
@@ -36,11 +38,14 @@ def _save_records(recs: list[SequenceRecord]) -> None:
         for r in recs
     ]
     CSV_ALL.parent.mkdir(parents=True, exist_ok=True)
+    logger.info("Saving records to %s", CSV_ALL)
     pd.DataFrame(rows).to_csv(CSV_ALL, index=False)
 
 
 def _load_records() -> list[SequenceRecord]:
     """Recreate SequenceRecord objects from the flat CSV."""
+    logger = logging.getLogger(__name__)
+    logger.info("Loading records from %s", CSV_ALL)
     df = pd.read_csv(CSV_ALL)
     return [
         SequenceRecord(
@@ -70,14 +75,18 @@ def run(force_refresh: bool = False) -> Path:
     Path
         Location of the generated HTML report.
     """
+    logger = logging.getLogger(__name__)
+    logger.info("Starting pipeline")
     # 1) Fetch or use cached data
     if force_refresh or not CSV_ALL.exists():
+        logger.info("Fetching sequences from UniProt")
         records = fetch_all_beta_globin_sequences()
         _save_records(records)
 
     records = _load_records()
 
     # 2) Similarity scores
+    logger.info("Computing similarity distances")
     distances = compute_distances(records)
     human_seq = next(
         r.sequence for r in records if r.species.common_name.lower() == "human"
@@ -97,7 +106,9 @@ def run(force_refresh: bool = False) -> Path:
         for r, dist in distances
     )
 
+    logger.info("Writing close species CSV to %s", CSV_CLOSE)
     df.to_csv(CSV_CLOSE, index=False)
 
     # 3) Render concentric-circle HTML
+    logger.info("Rendering HTML report to %s", HTML_OUT)
     return render_html(df.sort_values("hamming_distance"), HTML_OUT)

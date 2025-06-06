@@ -10,6 +10,11 @@
 ./spsim_d -r
 ```
 
+With refreshed data
+```
+./spsim_d -rr
+```
+
 ## Test
 
 ```
