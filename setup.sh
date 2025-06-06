@@ -1,10 +1,10 @@
 #!/bin/bash
 
-pip install --upgrade uv
+pip install --upgrade uv 
 
 # Clone and enter the repository
-git clone https://github.com/mabhay3420/species-similarity.git
-cd species-similarity
+# git clone https://github.com/mabhay3420/species-similarity.git
+# cd species-similarity
 
 # Create an in-project virtual environment and install all dependencies
 uv venv -p 3.9
