@@ -11,6 +11,7 @@
 ```
 
 With refreshed data
+
 ```
 ./spsim_d -rr
 ```
@@ -25,6 +26,12 @@ With refreshed data
 
 ```
 ./spsim_d -f
+```
+
+## Visualize
+
+```
+./spsim_d -v
 ```
 
 ## Styling instructions

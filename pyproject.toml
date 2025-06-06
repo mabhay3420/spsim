@@ -12,6 +12,9 @@ dependencies = [
     "rapidfuzz>=3.13.0",
     "tabulate>=0.9",
     "tqdm>=4.67.1",
+    "networkx>=3.2.1",
+    "scipy>=1.13.1",
+    "flask>=3.1.1",
 ]
 
 [tool.uv]

@@ -14,6 +14,7 @@ Options
   -s   Set up the virtual environment and install dependencies
   -r   Run the full analysis pipeline          (default)
   -rr  Run the full analysis pipeline          (with refreshed data)
+  -v   Visualize the results 
   -t   Execute the pytest test-suite
   -f   Format the codebase with ruff and black
   -h   Show this help message and exit
@@ -32,6 +33,10 @@ case "$arg" in
 -rr)
     echo "Running the pipeline…"
     ./run.sh --refresh
+    ;;
+-v)
+    echo "Visualizing the results…"
+    ./vis.sh
     ;;
 -t)
     echo "Running the tests…"

@@ -75,6 +75,7 @@ def test_run_pipeline_no_network(
     assert html_out.suffix == ".html"
     assert (isolated_data_dirs / "all.csv").exists()
     assert (isolated_data_dirs / "close.csv").exists()
+    assert (isolated_data_dirs / "graph.html").exists()
 
     # spot-check CSV content
     df = pd.read_csv(isolated_data_dirs / "close.csv")

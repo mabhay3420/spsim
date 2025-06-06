@@ -1,8 +1,11 @@
 from __future__ import annotations
+import json
 
 from pathlib import Path
-from typing import Final, Optional
+from typing import Final, Iterable, Optional
 import logging
+
+import networkx as nx
 
 import pandas as pd
 
@@ -11,6 +14,7 @@ from .fetch import fetch_gene_sequences, DEFAULT_GENE
 from .similarity import compute_distances, difference_mask
 from .images import image_url
 from .render import render_concentric as render_html
+from . import nx_vis
 
 # --------------------------------------------------------------------- #
 #  Paths                                                                #
@@ -19,6 +23,8 @@ from .render import render_concentric as render_html
 CSV_ALL: Final[Path] = DATA_PROCESSED / "all_beta_globin_sequences.csv"
 CSV_CLOSE: Final[Path] = DATA_PROCESSED / "close_to_human.csv"
 HTML_OUT: Final[Path] = DATA_PROCESSED / "close_to_human.html"
+GRAPH_HTML: Final[Path] = DATA_PROCESSED / "edit_distance_graph.html"
+GRAPH_JSON: Final[Path] = DATA_PROCESSED / "force" / "force.json"
 
 # --------------------------------------------------------------------- #
 #  Helpers for (de)serialising SequenceRecord                           #
@@ -54,6 +60,18 @@ def _load_records(path: Path) -> list[SequenceRecord]:
         )
         for row in df.itertuples(index=False)
     ]
+
+
+def build_distance_graph(distances: Iterable[tuple[SequenceRecord, int]]) -> nx.Graph:
+    """Return a graph with edges weighted by edit distance to Human."""
+    g = nx.Graph()
+    g.add_node("Human")
+    for rec, dist in distances:
+        name = rec.species.common_name
+        g.add_node(name)
+        if name.lower() != "human":
+            g.add_edge("Human", name, weight=dist)
+    return g
 
 
 # --------------------------------------------------------------------- #
@@ -130,7 +148,13 @@ def run(
 
     logger.info("Writing close species CSV to %s", csv_close)
     df.to_csv(csv_close, index=False)
+    # 3) Distance graph
+    graph = build_distance_graph(distances)
+    pos = nx.spring_layout(graph, pos={"Human": (0.0, 0.0)}, fixed=["Human"])
+    d = nx.json_graph.node_link_data(graph)
+    json.dump(d, open(GRAPH_JSON, "w"))
+    nx_vis.render_html(graph, GRAPH_HTML, pos=pos)
 
-    # 3) Render concentric-circle HTML
-    logger.info("Rendering HTML report to %s", html_out)
-    return render_html(df.sort_values("hamming_distance"), html_out)
+    # 4) Render concentric-circle HTML
+    logger.info("Rendering HTML report to %s", HTML_OUT)
+    return render_html(df.sort_values("hamming_distance"), HTML_OUT)
