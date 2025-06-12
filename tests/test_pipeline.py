@@ -21,10 +21,6 @@ def isolated_data_dirs(tmp_path, monkeypatch):
     # patch global constants
     monkeypatch.setattr(config, "DATA_RAW", raw, raising=False)
     monkeypatch.setattr(config, "DATA_PROCESSED", processed, raising=False)
-    monkeypatch.setattr(pipeline, "CSV_ALL", processed / "all.csv", raising=False)
-    monkeypatch.setattr(pipeline, "CSV_CLOSE", processed / "close.csv", raising=False)
-    monkeypatch.setattr(pipeline, "HTML_OUT", processed / "report.html", raising=False)
-    monkeypatch.setattr(pipeline, "GRAPH_HTML", processed / "graph.html", raising=False)
 
     return processed
 
@@ -56,17 +52,23 @@ def test_run_pipeline_no_network(
         ]
 
     monkeypatch.setattr(
-        fetch, "fetch_all_beta_globin_sequences", fake_fetch, raising=True
+        fetch, "fetch_gene_sequences", lambda *_: fake_fetch(), raising=True
     )
     monkeypatch.setattr(
-        pipeline, "fetch_all_beta_globin_sequences", fake_fetch, raising=True
+        pipeline, "fetch_gene_sequences", lambda *_: fake_fetch(), raising=True
     )
 
     # 2) stub image resolution
     monkeypatch.setattr(images, "image_url", lambda *_: None, raising=True)
 
     # 3) run
-    html_out: Path = pipeline.run(force_refresh=True)
+    html_out: Path = pipeline.run(
+        force_refresh=True,
+        gene="HBB",
+        csv_all=isolated_data_dirs / "all.csv",
+        csv_close=isolated_data_dirs / "close.csv",
+        html_out=isolated_data_dirs / "report.html",
+    )
 
     # 4) assertions
     assert html_out.exists()
