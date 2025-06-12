@@ -33,7 +33,6 @@ def isolated_data_dirs(tmp_path, monkeypatch):
 
     # ensure nested folders exist
     (processed / "force").mkdir()
-
     return processed
 
 

@@ -3,11 +3,18 @@ from functools import lru_cache
 from typing import Final
 import logging
 
+import requests_cache
+
+from .config import DATA_RAW
+
 # mypy: ignore-errors
 from pyinaturalist.rest_api import get_observations
 # from pyinaturalist import get_observations
 
 IMAGE_SIZE: Final[str] = "medium"
+
+# Cache iNaturalist responses ~1 day
+requests_cache.install_cache(str(DATA_RAW / "inat_cache"), expire_after=86400)
 
 
 @lru_cache(maxsize=None)
