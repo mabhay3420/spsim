@@ -78,27 +78,47 @@ def difference_mask(ref: str, other: str) -> str:
 
 def compute_distances(
     records: Iterable[SequenceRecord],
+    reference_common_name: str = "Human",
 ) -> list[tuple[SequenceRecord, int]]:
-    """
-    Given an iterable of `SequenceRecord`s that *must* include a
-    Human (common_name == 'Human'), return a list of pairs
-    *(record, hamming_distance_to_human)*.
+    """Return distances from each record to the reference species.
+
+    Parameters
+    ----------
+    records
+        Iterable of ``SequenceRecord`` instances.
+    reference_common_name
+        The ``common_name`` of the species to which all distances should be
+        computed.  Defaults to ``"Human"`` for backwards compatibility.
+
+    Raises
+    ------
+    ValueError
+        If the reference species is not present in ``records``.
     """
     logger = logging.getLogger(__name__)
 
     recs = list(records)
     try:
-        human_seq = next(
-            r.sequence for r in recs if r.species.common_name.lower() == "human"
+        ref_seq = next(
+            r.sequence
+            for r in recs
+            if r.species.common_name.lower() == reference_common_name.lower()
         )
     except StopIteration as exc:  # pragma: no cover
-        logger.error("Human sequence not present in record set")
-        raise ValueError("Human sequence not present in record set") from exc
+        logger.error("Reference '%s' not present in record set", reference_common_name)
+        raise ValueError(
+            f"Reference species '{reference_common_name}' not present"
+        ) from exc
 
     distances: list[tuple[SequenceRecord, int]] = []
     for rec in tqdm(recs, desc="Computing distances", unit="seq", leave=False):
-        dist = edit_distance(rec.sequence, human_seq)
-        logger.debug("Distance to human for %s: %d", rec.species.common_name, dist)
+        dist = edit_distance(rec.sequence, ref_seq)
+        logger.debug(
+            "Distance to %s for %s: %d",
+            reference_common_name,
+            rec.species.common_name,
+            dist,
+        )
         distances.append((rec, dist))
 
     return distances
