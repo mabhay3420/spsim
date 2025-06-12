@@ -21,6 +21,18 @@ def isolated_data_dirs(tmp_path, monkeypatch):
     # patch global constants
     monkeypatch.setattr(config, "DATA_RAW", raw, raising=False)
     monkeypatch.setattr(config, "DATA_PROCESSED", processed, raising=False)
+    monkeypatch.setattr(pipeline, "CSV_ALL", processed / "all.csv", raising=False)
+    monkeypatch.setattr(pipeline, "CSV_CLOSE", processed / "close.csv", raising=False)
+    monkeypatch.setattr(pipeline, "HTML_OUT", processed / "report.html", raising=False)
+    monkeypatch.setattr(
+        pipeline, "GRAPH_HTML", processed / pipeline.GRAPH_HTML.name, raising=False
+    )
+    monkeypatch.setattr(
+        pipeline, "GRAPH_JSON", processed / "force" / "force.json", raising=False
+    )
+
+    # ensure nested folders exist
+    (processed / "force").mkdir()
 
     return processed
 
@@ -75,7 +87,7 @@ def test_run_pipeline_no_network(
     assert html_out.suffix == ".html"
     assert (isolated_data_dirs / "all.csv").exists()
     assert (isolated_data_dirs / "close.csv").exists()
-    assert (isolated_data_dirs / "graph.html").exists()
+    assert (isolated_data_dirs / pipeline.GRAPH_HTML.name).exists()
 
     # spot-check CSV content
     df = pd.read_csv(isolated_data_dirs / "close.csv")
